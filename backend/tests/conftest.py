@@ -104,16 +104,6 @@ def _setup_test_database(tmp_path_factory):
 
     yield
 
-    with FileLock(str(lock_file)):
-        if done_file.exists():
-
-            async def teardown():
-                async with test_engine.begin() as conn:
-                    await conn.run_sync(Base.metadata.drop_all)
-
-            asyncio.get_event_loop().run_until_complete(teardown())
-            done_file.unlink(missing_ok=True)
-
 
 @pytest_asyncio.fixture(scope="function")
 async def db_session(_setup_test_database) -> AsyncGenerator[AsyncSession, None]:
