@@ -1,6 +1,6 @@
 # Claudex
 
-Full-stack Claude AI chat interface with integrated sandbox code execution.
+Open-source general AI agent powered by Claude Agent SDK with sandboxed code execution, in-browser IDE, and extensible capabilities.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/)
