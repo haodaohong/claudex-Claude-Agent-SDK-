@@ -32,7 +32,7 @@ class AIModelService(BaseDbService[AIModel]):
             cached = await redis.get(cache_key)
             if cached:
                 adapter = TypeAdapter(list[AIModelResponse])
-                return adapter.validate_json(cached)
+                return cast(list[AIModelResponse], adapter.validate_json(cached))
 
         async with self.session_factory() as db:
             query = select(AIModel).order_by(AIModel.sort_order, AIModel.name)
