@@ -7,6 +7,7 @@ from app.core.security import get_current_user
 from app.models.db_models import AIModel, User
 from app.models.schemas import AIModelResponse
 from app.services.ai_model import AIModelService
+from app.utils.redis import redis_connection
 
 router = APIRouter()
 
@@ -16,5 +17,6 @@ async def list_models(
     active_only: bool = True,
     current_user: User = Depends(get_current_user),
     service: AIModelService = Depends(get_ai_model_service),
-) -> Sequence[AIModel]:
-    return await service.get_models(active_only=active_only)
+) -> Sequence[AIModel] | list[AIModelResponse]:
+    async with redis_connection() as redis:
+        return await service.get_models(active_only=active_only, redis=redis)

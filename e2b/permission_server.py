@@ -136,7 +136,10 @@ async def handle_call_tool(
                 # Return MCP response
                 if approved:
                     if user_answers is not None:
-                        response = {"behavior": "allow", "updatedInput": {"answers": user_answers}}
+                        response = {
+                            "behavior": "allow",
+                            "updatedInput": {"answers": user_answers},
+                        }
                     else:
                         response = {"behavior": "allow", "updatedInput": tool_input}
                 else:

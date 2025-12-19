@@ -12,5 +12,6 @@ REDIS_KEY_CHAT_CANCEL: Final[str] = "chat:{chat_id}:cancel"
 REDIS_KEY_PERMISSION_REQUEST: Final[str] = "permission_request:{request_id}"
 REDIS_KEY_PERMISSION_RESPONSE: Final[str] = "permission_response:{request_id}"
 REDIS_KEY_USER_SETTINGS: Final[str] = "user_settings:{user_id}"
+REDIS_KEY_MODELS_LIST: Final[str] = "models:list:{active_only}"
 
 SANDBOX_AUTO_PAUSE_TIMEOUT: Final[int] = 3000

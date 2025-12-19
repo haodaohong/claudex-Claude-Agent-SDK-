@@ -86,7 +86,6 @@ const TAB_FIELDS: Record<TabKey, (keyof UserSettings)[]> = {
     'claude_code_oauth_token',
     'z_ai_api_key',
     'openrouter_api_key',
-    'notification_sound_enabled',
   ],
   mcp: ['custom_mcps'],
   agents: ['custom_agents'],

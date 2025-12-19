@@ -147,6 +147,7 @@ class Settings(BaseSettings):
     CELERY_RESULT_EXPIRES_SECONDS: int = 3600
     CHAT_REVOKED_KEY_TTL_SECONDS: int = 3600
     USER_SETTINGS_CACHE_TTL_SECONDS: int = 300
+    MODELS_CACHE_TTL_SECONDS: int = 3600
 
     class Config:
         env_file = ".env"

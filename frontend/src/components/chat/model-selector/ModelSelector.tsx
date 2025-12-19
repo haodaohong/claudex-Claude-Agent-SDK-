@@ -1,5 +1,5 @@
 import { memo, useMemo, useEffect } from 'react';
-import { Bot } from 'lucide-react';
+import { Bot, ChevronDown } from 'lucide-react';
 import { Dropdown } from '@/components/ui';
 import type { DropdownItemType } from '@/components/ui';
 import { useAuthStore } from '@/store';
@@ -89,7 +89,13 @@ export const ModelSelector = memo(function ModelSelector({
   }, [availableModels, selectedModel, onModelChange]);
 
   if (isLoading || models.length === 0) {
-    return null;
+    return (
+      <div className="flex items-center gap-1 rounded-lg border border-border/70 bg-surface-secondary px-2 py-1 shadow-sm dark:border-white/5 dark:bg-surface-dark-secondary">
+        <Bot className="h-3.5 w-3.5 text-text-quaternary" />
+        <div className="hidden h-3.5 w-16 animate-pulse rounded bg-text-quaternary/20 sm:block" />
+        <ChevronDown className="hidden h-3.5 w-3.5 text-text-quaternary sm:block" />
+      </div>
+    );
   }
 
   return (
