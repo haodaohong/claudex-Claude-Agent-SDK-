@@ -12,6 +12,8 @@ def create_docker_config() -> DockerConfig:
         network=settings.DOCKER_NETWORK,
         host=settings.DOCKER_HOST,
         preview_base_url=settings.DOCKER_PREVIEW_BASE_URL,
+        sandbox_domain=settings.DOCKER_SANDBOX_DOMAIN,
+        traefik_network=settings.DOCKER_TRAEFIK_NETWORK,
     )
 
 
