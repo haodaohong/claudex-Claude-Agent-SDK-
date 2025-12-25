@@ -53,8 +53,48 @@ class LocalDockerProvider(SandboxProvider):
                 raise SandboxException(f"Failed to connect to Docker: {e}")
         return self._docker_client
 
+    def _build_traefik_labels(self, sandbox_id: str) -> dict[str, str]:
+        """
+        Generate Traefik labels so sandbox containers can be accessed via HTTPS subdomains.
+
+        Problem: Main app uses HTTPS, but sandbox containers run on random HTTP ports.
+        Browsers block HTTP iframes inside HTTPS pages (mixed content).
+
+        Solution: Use Traefik to route subdomains to container ports over HTTPS.
+        Example: https://sandbox-abc123-8765.sandbox.example.com -> container port 8765
+
+        Setup required:
+        - DNS: *.sandbox.example.com -> your server IP
+        - SSL: Wildcard certificate for *.sandbox.example.com
+        - Env: DOCKER_SANDBOX_DOMAIN=sandbox.example.com
+        - Env: DOCKER_TRAEFIK_NETWORK=coolify (your Traefik network name)
+
+        If not configured, returns empty dict and falls back to http://localhost:port URLs.
+        """
+        if not self.config.sandbox_domain or not self.config.traefik_network:
+            return {}
+
+        labels: dict[str, str] = {"traefik.enable": "true"}
+        all_ports = [self.config.openvscode_port] + list(DOCKER_AVAILABLE_PORTS)
+
+        for port in all_ports:
+            router_name = f"sandbox-{sandbox_id}-{port}"
+            subdomain = f"{router_name}.{self.config.sandbox_domain}"
+            labels[f"traefik.http.routers.{router_name}.rule"] = f"Host(`{subdomain}`)"
+            labels[f"traefik.http.routers.{router_name}.entrypoints"] = "https"
+            labels[f"traefik.http.routers.{router_name}.tls"] = "true"
+            labels[f"traefik.http.routers.{router_name}.service"] = router_name
+            labels[f"traefik.http.services.{router_name}.loadbalancer.server.port"] = (
+                str(port)
+            )
+
+        return labels
+
     def _create_container(self, sandbox_id: str) -> Any:
         client = self._get_docker_client()
+        labels = self._build_traefik_labels(sandbox_id)
+        network = self.config.traefik_network or self.config.network
+
         container = client.containers.run(
             self.config.image,
             command="/bin/bash",
@@ -66,7 +106,8 @@ class LocalDockerProvider(SandboxProvider):
             tty=True,
             detach=True,
             remove=False,
-            network=self.config.network,
+            network=network,
+            labels=labels,
             ports={
                 **{f"{port}/tcp": None for port in DOCKER_AVAILABLE_PORTS},
                 f"{self.config.openvscode_port}/tcp": None,
@@ -512,7 +553,13 @@ class LocalDockerProvider(SandboxProvider):
 
         return self._build_preview_links(
             listening_ports=mapped_ports,
-            url_builder=lambda port: f"{self.config.preview_base_url}:{port_map[port]}",
+            url_builder=(
+                (
+                    lambda port: f"https://sandbox-{sandbox_id}-{port}.{self.config.sandbox_domain}"
+                )
+                if self.config.sandbox_domain
+                else (lambda port: f"{self.config.preview_base_url}:{port_map[port]}")
+            ),
             excluded_ports={self.config.openvscode_port},
         )
 
@@ -555,6 +602,12 @@ class LocalDockerProvider(SandboxProvider):
         return container
 
     async def get_ide_url(self, sandbox_id: str) -> str | None:
+        if self.config.sandbox_domain:
+            subdomain = f"sandbox-{sandbox_id}-{self.config.openvscode_port}"
+            return (
+                f"https://{subdomain}.{self.config.sandbox_domain}/?folder=/home/user"
+            )
+
         await self.connect_sandbox(sandbox_id)
         port_map = self._port_mappings.get(sandbox_id, {})
         host_port = port_map.get(self.config.openvscode_port)

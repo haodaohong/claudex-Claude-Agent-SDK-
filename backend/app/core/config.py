@@ -133,6 +133,10 @@ class Settings(BaseSettings):
     DOCKER_NETWORK: str = "claudex-sandbox-net"
     DOCKER_HOST: str | None = None
     DOCKER_PREVIEW_BASE_URL: str = "http://localhost"
+    # Traefik subdomain routing for HTTPS sandbox access (see docker_provider.py)
+    # Example: DOCKER_SANDBOX_DOMAIN=sandbox.example.com, DOCKER_TRAEFIK_NETWORK=coolify
+    DOCKER_SANDBOX_DOMAIN: str = ""
+    DOCKER_TRAEFIK_NETWORK: str = ""
 
     # Security Headers Configuration
     ENABLE_SECURITY_HEADERS: bool = True
