@@ -2,6 +2,24 @@ import { ReactNode, useCallback, useMemo, useState } from 'react';
 import { Header, type HeaderProps } from './Header';
 import { cn } from '@/utils/cn';
 import { LayoutContext, type LayoutContextValue } from './layoutState';
+import { useUIStore } from '@/store';
+import { useSwipeGesture, useIsMobile } from '@/hooks';
+
+// Mobile overlay to close sidebar when clicking outside
+function MobileSidebarOverlay() {
+  const sidebarOpen = useUIStore((state) => state.sidebarOpen);
+  const setSidebarOpen = useUIStore((state) => state.setSidebarOpen);
+
+  if (!sidebarOpen) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-30 bg-black/50 md:hidden"
+      onClick={() => setSidebarOpen(false)}
+      aria-hidden="true"
+    />
+  );
+}
 
 export interface LayoutProps extends HeaderProps {
   children: ReactNode;
@@ -20,6 +38,16 @@ export function Layout({
   showHeader = true,
 }: LayoutProps) {
   const [sidebarContent, setSidebarContent] = useState<ReactNode | null>(null);
+  const sidebarOpen = useUIStore((state) => state.sidebarOpen);
+  const setSidebarOpen = useUIStore((state) => state.setSidebarOpen);
+  const isMobile = useIsMobile();
+
+  // Swipe gestures for mobile sidebar
+  useSwipeGesture({
+    onSwipeRight: () => setSidebarOpen(true),
+    onSwipeLeft: () => sidebarOpen && setSidebarOpen(false),
+    enabled: isMobile && !!sidebarContent,
+  });
 
   const setSidebar = useCallback((content: ReactNode | null) => {
     setSidebarContent(content);
@@ -39,6 +67,9 @@ export function Layout({
         {showHeader && <Header onLogout={onLogout} userName={userName} isAuthPage={isAuthPage} />}
 
         <div className="flex min-h-0 flex-1">
+          {/* Mobile overlay - click outside sidebar to close */}
+          {sidebarContent && <MobileSidebarOverlay />}
+
           {sidebarContent ? (
             <div className="relative h-full flex-shrink-0">{sidebarContent}</div>
           ) : null}
