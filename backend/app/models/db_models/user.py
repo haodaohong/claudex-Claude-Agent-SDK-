@@ -97,4 +97,7 @@ class UserSettings(Base):
     sandbox_provider: Mapped[str] = mapped_column(
         String(20), nullable=False, default="docker", server_default="docker"
     )
+    auto_compact_disabled: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default="false", nullable=False
+    )
     user = relationship("User", back_populates="settings")

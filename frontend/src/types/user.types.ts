@@ -93,6 +93,7 @@ export interface UserSettings {
   custom_prompts: CustomPrompt[] | null;
   notification_sound_enabled?: boolean;
   sandbox_provider: SandboxProvider;
+  auto_compact_disabled?: boolean;
   created_at: string;
   updated_at: string;
 }

@@ -89,6 +89,7 @@ class UserSettingsBase(BaseModel):
     custom_prompts: list[CustomPrompt] | None = None
     notification_sound_enabled: bool = True
     sandbox_provider: Literal["e2b", "docker"] = "docker"
+    auto_compact_disabled: bool = False
 
     @field_validator(
         "custom_agents",

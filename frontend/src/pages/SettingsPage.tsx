@@ -80,6 +80,7 @@ const createFallbackSettings = (): UserSettings => ({
   custom_prompts: null,
   notification_sound_enabled: true,
   sandbox_provider: 'docker',
+  auto_compact_disabled: false,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
 });
@@ -91,6 +92,7 @@ const TAB_FIELDS: Record<TabKey, (keyof UserSettings)[]> = {
     'claude_code_oauth_token',
     'z_ai_api_key',
     'openrouter_api_key',
+    'auto_compact_disabled',
   ],
   mcp: ['custom_mcps'],
   agents: ['custom_agents'],
@@ -187,6 +189,7 @@ const SettingsPage: React.FC = () => {
         'custom_prompts',
         'notification_sound_enabled',
         'sandbox_provider',
+        'auto_compact_disabled',
       ];
 
       for (const field of fields) {
@@ -381,6 +384,10 @@ const SettingsPage: React.FC = () => {
     persistSettings((prev) => ({ ...prev, sandbox_provider: provider }));
   };
 
+  const handleAutoCompactDisabledChange = (disabled: boolean) => {
+    persistSettings((prev) => ({ ...prev, auto_compact_disabled: disabled }));
+  };
+
   const sidebarContent = useMemo(
     () => (
       <Sidebar
@@ -528,6 +535,7 @@ const SettingsPage: React.FC = () => {
                     onDeleteAllChats={handleDeleteAllChats}
                     onNotificationSoundChange={handleNotificationSoundChange}
                     onSandboxProviderChange={handleSandboxProviderChange}
+                    onAutoCompactDisabledChange={handleAutoCompactDisabledChange}
                   />
                 </div>
               )}

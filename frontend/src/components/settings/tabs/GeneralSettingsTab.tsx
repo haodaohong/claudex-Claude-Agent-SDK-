@@ -11,6 +11,7 @@ interface GeneralSettingsTabProps {
   onDeleteAllChats: () => void;
   onNotificationSoundChange: (enabled: boolean) => void;
   onSandboxProviderChange: (provider: SandboxProvider | null) => void;
+  onAutoCompactDisabledChange: (disabled: boolean) => void;
 }
 
 export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
@@ -22,6 +23,7 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
   onDeleteAllChats,
   onNotificationSoundChange,
   onSandboxProviderChange,
+  onAutoCompactDisabledChange,
 }) => (
   <div className="space-y-6">
     <div>
@@ -101,6 +103,28 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
           <Switch
             checked={settings.notification_sound_enabled ?? true}
             onCheckedChange={onNotificationSoundChange}
+          />
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <h2 className="mb-4 text-sm font-medium text-text-primary dark:text-text-dark-primary">
+        Claude Settings
+      </h2>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-medium text-text-primary dark:text-text-dark-primary">
+              Disable Auto Compact
+            </h3>
+            <p className="mt-0.5 text-xs text-text-tertiary dark:text-text-dark-tertiary">
+              Prevents Claude from automatically compacting conversation history.
+            </p>
+          </div>
+          <Switch
+            checked={settings.auto_compact_disabled ?? false}
+            onCheckedChange={onAutoCompactDisabledChange}
           />
         </div>
       </div>

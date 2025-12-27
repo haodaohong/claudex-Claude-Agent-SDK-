@@ -214,6 +214,7 @@ async def _create_and_initialize_sandbox(
         custom_slash_commands=user_settings.custom_slash_commands,
         custom_agents=user_settings.custom_agents,
         user_id=str(user.id),
+        auto_compact_disabled=user_settings.auto_compact_disabled,
     )
 
     return sandbox_service, sandbox_id

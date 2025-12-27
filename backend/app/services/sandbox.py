@@ -485,6 +485,27 @@ class SandboxService:
         await self.write_file(sandbox_id, OPENVSCODE_SETTINGS_PATH, settings_content)
         logger.info("IDE theme updated to: %s", vscode_theme)
 
+    async def _setup_claude_config(
+        self, sandbox_id: str, auto_compact_disabled: bool
+    ) -> None:
+        if not auto_compact_disabled:
+            return
+
+        claude_config_path = "/home/user/.claude.json"
+        config: dict[str, Any] = {}
+
+        try:
+            existing = await self.provider.read_file(sandbox_id, claude_config_path)
+            if not existing.is_binary and existing.content:
+                config = json.loads(existing.content)
+        except Exception:
+            pass
+
+        config["autoCompactEnabled"] = False
+        await self.write_file(
+            sandbox_id, claude_config_path, json.dumps(config, indent=2)
+        )
+
     async def initialize_sandbox(
         self,
         sandbox_id: str,
@@ -495,9 +516,11 @@ class SandboxService:
         custom_slash_commands: list[CustomSlashCommandDict] | None = None,
         custom_agents: list[CustomAgentDict] | None = None,
         user_id: str | None = None,
+        auto_compact_disabled: bool = False,
     ) -> None:
         tasks: list[Coroutine[None, None, None]] = [
             self._start_openvscode_server(sandbox_id),
+            self._setup_claude_config(sandbox_id, auto_compact_disabled),
         ]
 
         if custom_env_vars:

@@ -127,6 +127,7 @@ class ChatService(BaseDbService[Chat]):
         custom_skills = user_settings.custom_skills
         custom_slash_commands = user_settings.custom_slash_commands
         custom_agents = user_settings.custom_agents
+        auto_compact_disabled = user_settings.auto_compact_disabled
 
         await self.sandbox_service.initialize_sandbox(
             sandbox_id=sandbox_id,
@@ -137,6 +138,7 @@ class ChatService(BaseDbService[Chat]):
             custom_slash_commands=custom_slash_commands,
             custom_agents=custom_agents,
             user_id=str(user.id),
+            auto_compact_disabled=auto_compact_disabled,
         )
 
         async with self.session_factory() as db:
