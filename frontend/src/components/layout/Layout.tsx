@@ -5,7 +5,6 @@ import { LayoutContext, type LayoutContextValue } from './layoutState';
 import { useUIStore } from '@/store';
 import { useSwipeGesture, useIsMobile } from '@/hooks';
 
-// Mobile overlay to close sidebar when clicking outside
 function MobileSidebarOverlay() {
   const sidebarOpen = useUIStore((state) => state.sidebarOpen);
   const setSidebarOpen = useUIStore((state) => state.setSidebarOpen);
@@ -42,7 +41,6 @@ export function Layout({
   const setSidebarOpen = useUIStore((state) => state.setSidebarOpen);
   const isMobile = useIsMobile();
 
-  // Swipe gestures for mobile sidebar
   useSwipeGesture({
     onSwipeRight: () => setSidebarOpen(true),
     onSwipeLeft: () => sidebarOpen && setSidebarOpen(false),
@@ -67,7 +65,6 @@ export function Layout({
         {showHeader && <Header onLogout={onLogout} userName={userName} isAuthPage={isAuthPage} />}
 
         <div className="flex min-h-0 flex-1">
-          {/* Mobile overlay - click outside sidebar to close */}
           {sidebarContent && <MobileSidebarOverlay />}
 
           {sidebarContent ? (

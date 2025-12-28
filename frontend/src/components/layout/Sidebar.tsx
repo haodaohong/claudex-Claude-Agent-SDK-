@@ -159,7 +159,6 @@ export function Sidebar({
     (chatId: string) => {
       onChatSelect(chatId);
       setHoveredChatId(null);
-      // Collapse sidebar on mobile
       if (isMobile) {
         setSidebarOpen(false);
       }
@@ -203,7 +202,6 @@ export function Sidebar({
 
   const handleNewChat = () => {
     navigate('/');
-    // Collapse sidebar on mobile
     if (isMobile) {
       setSidebarOpen(false);
     }
