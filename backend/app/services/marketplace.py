@@ -31,9 +31,6 @@ GITHUB_API_BASE = (
 CACHE_TTL_SECONDS = 3600
 MAX_RECURSION_DEPTH = 5
 MAX_SKILL_FILES = 50
-
-_catalog_cache: list[MarketplacePluginDict] | None = None
-_catalog_cached_at: datetime | None = None
 SAFE_PATH_SEGMENT = re.compile(r"^[a-zA-Z0-9_\-\.]+$")
 
 
@@ -75,21 +72,61 @@ def _validate_component_name(name: str) -> str:
 
 
 class MarketplaceService:
-    def __init__(self) -> None:
+    _catalog_cache: list[MarketplacePluginDict] | None = None
+    _catalog_cached_at: datetime | None = None
+
+    def __init__(self, github_token: str | None = None) -> None:
         self.cache_path = Path(settings.STORAGE_PATH) / "marketplace_cache"
         self.cache_path.mkdir(parents=True, exist_ok=True)
         self._cache_file = self.cache_path / "catalog.json"
+        self._github_token = github_token
+
+    def _get_github_api_headers(self) -> dict[str, str]:
+        headers = {"Accept": "application/vnd.github.v3+json"}
+        if self._github_token:
+            headers["Authorization"] = f"Bearer {self._github_token}"
+        return headers
+
+    def _check_rate_limit_error(self, response: httpx.Response) -> None:
+        if response.status_code == 403:
+            remaining = response.headers.get("X-RateLimit-Remaining", "")
+            if remaining == "0":
+                reset_timestamp = response.headers.get("X-RateLimit-Reset", "")
+                msg = (
+                    "GitHub API rate limit exceeded. "
+                    "Configure your GitHub Personal Access Token in Settings."
+                )
+                if reset_timestamp:
+                    try:
+                        reset_time = datetime.fromtimestamp(
+                            int(reset_timestamp), tz=timezone.utc
+                        )
+                        minutes_until_reset = max(
+                            1,
+                            int(
+                                (
+                                    reset_time - datetime.now(timezone.utc)
+                                ).total_seconds()
+                                / 60
+                            ),
+                        )
+                        msg += f" Resets in ~{minutes_until_reset} min."
+                    except (ValueError, TypeError, OverflowError):
+                        pass
+                raise MarketplaceException(
+                    msg,
+                    error_code=ErrorCode.MARKETPLACE_FETCH_FAILED,
+                    status_code=429,
+                )
 
     async def fetch_catalog(
         self, force_refresh: bool = False
     ) -> list[MarketplacePluginDict]:
-        global _catalog_cache, _catalog_cached_at
-
         if not force_refresh and self._is_cache_valid():
-            return _catalog_cache or []
+            return MarketplaceService._catalog_cache or []
 
         if not force_refresh and self._load_disk_cache():
-            return _catalog_cache or []
+            return MarketplaceService._catalog_cache or []
 
         async with httpx.AsyncClient(timeout=30.0) as client:
             try:
@@ -114,20 +151,20 @@ class MarketplaceService:
             and not p.get("has_lsp_only", False)
         ]
 
-        _catalog_cache = plugins
-        _catalog_cached_at = datetime.now(timezone.utc)
+        MarketplaceService._catalog_cache = plugins
+        MarketplaceService._catalog_cached_at = datetime.now(timezone.utc)
         self._save_disk_cache(plugins)
         return plugins
 
     def _is_cache_valid(self) -> bool:
-        global _catalog_cache, _catalog_cached_at
-        if _catalog_cache is None or _catalog_cached_at is None:
+        cls = MarketplaceService
+        if cls._catalog_cache is None or cls._catalog_cached_at is None:
             return False
-        expiry = _catalog_cached_at + timedelta(seconds=CACHE_TTL_SECONDS)
+        expiry = cls._catalog_cached_at + timedelta(seconds=CACHE_TTL_SECONDS)
         return datetime.now(timezone.utc) < expiry
 
     def _load_disk_cache(self) -> bool:
-        global _catalog_cache, _catalog_cached_at
+        cls = MarketplaceService
         try:
             if not self._cache_file.exists():
                 return False
@@ -138,8 +175,10 @@ class MarketplaceService:
             if cache_age.total_seconds() > CACHE_TTL_SECONDS:
                 return False
             with open(self._cache_file, "r") as f:
-                _catalog_cache = json.load(f)
-            _catalog_cached_at = datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc)
+                cls._catalog_cache = json.load(f)
+            cls._catalog_cached_at = datetime.fromtimestamp(
+                stat.st_mtime, tz=timezone.utc
+            )
             return True
         except Exception as e:
             logger.warning(f"Failed to load disk cache: {e}")
@@ -278,9 +317,8 @@ class MarketplaceService:
     async def _list_directory(self, client: httpx.AsyncClient, path: str) -> list[str]:
         url = f"{GITHUB_API_BASE}/{path}"
         try:
-            response = await client.get(
-                url, headers={"Accept": "application/vnd.github.v3+json"}
-            )
+            response = await client.get(url, headers=self._get_github_api_headers())
+            self._check_rate_limit_error(response)
             if response.status_code != 200:
                 return []
             data = response.json()
@@ -377,9 +415,8 @@ class MarketplaceService:
         files: list[str] = []
         url = f"{GITHUB_API_BASE}/{path}"
         try:
-            response = await client.get(
-                url, headers={"Accept": "application/vnd.github.v3+json"}
-            )
+            response = await client.get(url, headers=self._get_github_api_headers())
+            self._check_rate_limit_error(response)
             if response.status_code != 200:
                 return []
             data = response.json()

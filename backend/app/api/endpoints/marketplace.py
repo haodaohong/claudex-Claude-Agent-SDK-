@@ -237,6 +237,10 @@ async def uninstall_plugin_components(
     failed: list[InstallComponentResult] = []
     user_id = str(current_user.id)
 
+    installed_plugins: list[InstalledPluginDict] = list(
+        user_settings.installed_plugins or []
+    )
+
     for component_id in request.components:
         if ":" not in component_id:
             failed.append(
@@ -344,15 +348,11 @@ async def uninstall_plugin_components(
             )
 
     if uninstalled:
-        # Update installed_plugins to remove uninstalled components
-        installed_plugins: list[InstalledPluginDict] = list(
-            user_settings.installed_plugins or []
-        )
         plugin_idx = next(
             (
                 i
                 for i, p in enumerate(installed_plugins)
-                if p["name"] == request.plugin_name
+                if p.get("name") == request.plugin_name
             ),
             None,
         )

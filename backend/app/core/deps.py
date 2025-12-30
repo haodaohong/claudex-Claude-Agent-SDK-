@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
 from app.core.security import get_current_user
+from app.core.user_manager import optional_current_active_user
 from app.db.session import SessionLocal, get_db
 from app.models.db_models import Chat, User
 from app.services.agent import AgentService
@@ -60,12 +61,31 @@ def get_agent_service() -> AgentService:
     return AgentService()
 
 
-def get_marketplace_service() -> MarketplaceService:
-    return MarketplaceService()
+async def get_github_token(
+    user: User | None = Depends(optional_current_active_user),
+    db: AsyncSession = Depends(get_db),
+    user_service: UserService = Depends(get_user_service),
+) -> str | None:
+    if user is None:
+        return None
+    try:
+        user_settings = await user_service.get_user_settings(user.id, db=db)
+        token = user_settings.github_personal_access_token
+        return token if token else None
+    except UserException:
+        return None
 
 
-def get_plugin_installer_service() -> PluginInstallerService:
-    return PluginInstallerService()
+async def get_marketplace_service(
+    github_token: str | None = Depends(get_github_token),
+) -> MarketplaceService:
+    return MarketplaceService(github_token=github_token)
+
+
+async def get_plugin_installer_service(
+    github_token: str | None = Depends(get_github_token),
+) -> PluginInstallerService:
+    return PluginInstallerService(github_token=github_token)
 
 
 def get_scheduler_service() -> SchedulerService:
