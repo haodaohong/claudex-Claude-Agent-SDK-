@@ -288,6 +288,7 @@ async def run_chat_stream(
     events: list[StreamEvent] = []
 
     publisher = StreamPublisher(chat_id)
+    result: str = ""
 
     try:
         await publisher.connect(task)
@@ -365,9 +366,11 @@ async def run_chat_stream(
                     },
                 )
 
-                return outcome.final_content
+                result = outcome.final_content
     finally:
         await publisher.cleanup()
+
+    return result
 
 
 async def initialize_and_run_chat(
