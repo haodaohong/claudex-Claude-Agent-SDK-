@@ -2,7 +2,6 @@ import logging
 import time
 import uuid
 from collections.abc import Callable
-from contextvars import ContextVar
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,19 +15,12 @@ from app.services.exceptions import ServiceException
 
 logger = logging.getLogger(__name__)
 
-request_id_ctx: ContextVar[str | None] = ContextVar("request_id", default=None)
-
-
-def get_request_id() -> str | None:
-    return request_id_ctx.get()
-
 
 class RequestIdMiddleware(BaseHTTPMiddleware):
     async def dispatch(
         self, request: Request, call_next: Callable[[Request], Response]
     ) -> Response:
         request_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())
-        request_id_ctx.set(request_id)
         request.state.request_id = request_id
 
         start_time = time.perf_counter()

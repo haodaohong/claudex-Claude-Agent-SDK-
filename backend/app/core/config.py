@@ -112,8 +112,6 @@ class Settings(BaseSettings):
     MAIL_SERVER: str = "smtp.sendgrid.net"
     MAIL_STARTTLS: bool = True
     MAIL_SSL_TLS: bool = False
-    USE_CREDENTIALS: bool = True
-    VALIDATE_CERTS: bool = True
 
     # Email validation settings
     BLOCK_DISPOSABLE_EMAILS: bool = True

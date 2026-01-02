@@ -493,7 +493,7 @@ class ChatService(BaseDbService[Chat]):
                 )
 
             if sandbox_id and message.checkpoint_id:
-                await self.sandbox_service.restore_to_message(
+                await self.sandbox_service.restore_checkpoint(
                     sandbox_id, str(message.id)
                 )
 

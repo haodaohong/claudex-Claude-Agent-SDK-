@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Callable, Coroutine
 
@@ -74,14 +74,6 @@ class DockerConfig:
     openvscode_port: int = 8765
     sandbox_domain: str = ""
     traefik_network: str = ""
-
-
-@dataclass
-class SandboxContext:
-    sandbox_id: str
-    provider_type: SandboxProviderType
-    connected: bool = False
-    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 PtyDataCallbackType = Callable[[bytes], Coroutine[Any, Any, None]]

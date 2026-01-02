@@ -91,11 +91,3 @@ class SSEEventPublisher:
         self, chat_id: str, content: str, event_id: str | None = None
     ) -> None:
         await self._publish_event(chat_id, "content", content, event_id)
-
-    async def publish_error(
-        self, chat_id: str, error: str, event_id: str | None = None
-    ) -> None:
-        await self._publish_event(chat_id, "error", error, event_id)
-
-    async def publish_complete(self, chat_id: str, event_id: str | None = None) -> None:
-        await self._publish_event(chat_id, "complete", "", event_id)

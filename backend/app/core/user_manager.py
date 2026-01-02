@@ -23,11 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 class UserDatabase(SQLAlchemyUserDatabase[User, uuid.UUID]):
-    async def get_by_username(self, username: str) -> User | None:
-        statement = select(self.user_table).where(self.user_table.username == username)
-        result = await self.session.execute(statement)
-        user: User | None = result.scalar_one_or_none()
-        return user
+    pass
 
 
 async def get_user_db(

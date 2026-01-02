@@ -38,11 +38,6 @@ class UserCreate(schemas.BaseUserCreate):
         return v
 
 
-class UserUpdate(schemas.BaseUserUpdate):
-    username: str | None = None
-    daily_message_limit: int | None = None
-
-
 class UserBase(BaseModel):
     email: EmailStr
     username: str
@@ -75,51 +70,7 @@ class LogoutRequest(BaseModel):
     refresh_token: str
 
 
-class SignupResponse(BaseModel):
-    message: str
-    email: str
-    verification_required: bool
-    access_token: str | None = None
-
-
-class VerifyEmailRequest(BaseModel):
-    token: str
-    email: str
-
-
-class VerifyEmailResponse(BaseModel):
-    message: str
-    access_token: str | None = None
-
-
-class ResendVerificationRequest(BaseModel):
-    email: str
-
-
-class ResendVerificationResponse(BaseModel):
-    message: str
-
-
 class UserUsage(BaseModel):
     messages_used_today: int
     daily_message_limit: int | None
     messages_remaining: int
-
-
-class ForgotPasswordRequest(BaseModel):
-    email: EmailStr
-
-
-class ForgotPasswordResponse(BaseModel):
-    success: bool
-    message: str
-
-
-class ResetPasswordRequest(BaseModel):
-    token: str
-    password: str = Field(min_length=8)
-
-
-class ResetPasswordResponse(BaseModel):
-    success: bool
-    message: str

@@ -141,7 +141,7 @@ async def execute_scheduled_task_async(
         try:
             (
                 chat,
-                user_message,
+                _,
                 assistant_message,
             ) = await setup_execution_chat_context(
                 session_factory, scheduled_task, user, sandbox_id, execution_id

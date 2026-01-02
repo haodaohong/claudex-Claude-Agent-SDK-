@@ -3,12 +3,11 @@ import hashlib
 import logging
 import secrets
 from datetime import datetime, timedelta, timezone
-from typing import Any, cast
+from typing import cast
 from uuid import UUID
 
 from cryptography.fernet import Fernet
 from fastapi import Depends, HTTPException, status, Query
-from fastapi.security import OAuth2PasswordBearer
 from fastapi_users.password import PasswordHelper
 from jose import jwt
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,7 +19,6 @@ from .config import get_settings
 from .user_manager import optional_current_active_user
 
 settings = get_settings()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/jwt/login", auto_error=False)
 password_helper = PasswordHelper()
 logger = logging.getLogger(__name__)
 
@@ -53,18 +51,6 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def get_password_hash(password: str) -> str:
     return str(password_helper.hash(password))
-
-
-def create_access_token(
-    data: dict[str, Any], expires_delta: timedelta | None = None
-) -> str:
-    to_encode = data.copy()
-    to_encode["exp"] = datetime.now(timezone.utc) + (
-        expires_delta or timedelta(minutes=15)
-    )
-    return cast(
-        str, jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
-    )
 
 
 def create_chat_scoped_token(chat_id: str, expires_minutes: int | None = None) -> str:

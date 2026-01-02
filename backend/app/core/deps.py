@@ -2,10 +2,9 @@ from collections.abc import AsyncIterator
 from dataclasses import dataclass
 
 from fastapi import Depends, HTTPException, status
-from sqlalchemy import exists, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import get_settings
 from app.core.security import get_current_user
 from app.core.user_manager import optional_current_active_user
 from app.db.session import SessionLocal, get_db
@@ -29,8 +28,6 @@ from app.services.plugin_installer import PluginInstallerService
 from app.services.skill import SkillService
 from app.services.storage import StorageService
 from app.services.user import UserService
-
-settings = get_settings()
 
 
 def get_ai_model_service() -> AIModelService:
@@ -185,35 +182,3 @@ async def get_chat_service(
             user_service,
             session_factory=SessionLocal,
         )
-
-
-async def get_verified_sandbox_id(
-    sandbox_id: str,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
-) -> str:
-    sandbox_exists_query = select(
-        exists().where(Chat.sandbox_id == sandbox_id, Chat.deleted_at.is_(None))
-    )
-    result = await db.execute(sandbox_exists_query)
-    if not result.scalar():
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Sandbox not found",
-        )
-
-    has_access_query = select(
-        exists().where(
-            Chat.sandbox_id == sandbox_id,
-            Chat.user_id == current_user.id,
-            Chat.deleted_at.is_(None),
-        )
-    )
-    result = await db.execute(has_access_query)
-    if not result.scalar():
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You don't have permission to access this sandbox",
-        )
-
-    return sandbox_id

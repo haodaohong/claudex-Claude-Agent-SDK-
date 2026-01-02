@@ -90,11 +90,11 @@ class AIModelAdmin(ModelView, model=AIModel):
     column_default_sort = [("sort_order", False)]
 
     column_formatters = {
-        "provider": lambda m, a: m.provider.value if m.provider else "",
-        "created_at": lambda m, a: m.created_at.strftime("%Y-%m-%d %H:%M:%S")
+        "provider": lambda m, _: m.provider.value if m.provider else "",
+        "created_at": lambda m, _: m.created_at.strftime("%Y-%m-%d %H:%M:%S")
         if m.created_at
         else "",
-        "updated_at": lambda m, a: m.updated_at.strftime("%Y-%m-%d %H:%M:%S")
+        "updated_at": lambda m, _: m.updated_at.strftime("%Y-%m-%d %H:%M:%S")
         if m.updated_at
         else "",
     }
@@ -144,16 +144,16 @@ class UserAdmin(ModelView, model=User):
     column_default_sort = [("email", False)]
 
     column_formatters = {
-        "created_at": lambda m, a: m.created_at.strftime("%Y-%m-%d %H:%M:%S")
+        "created_at": lambda m, _: m.created_at.strftime("%Y-%m-%d %H:%M:%S")
         if m.created_at
         else "",
-        "updated_at": lambda m, a: m.updated_at.strftime("%Y-%m-%d %H:%M:%S")
+        "updated_at": lambda m, _: m.updated_at.strftime("%Y-%m-%d %H:%M:%S")
         if m.updated_at
         else "",
-        "daily_message_limit": lambda m, a: "Unlimited"
+        "daily_message_limit": lambda m, _: "Unlimited"
         if m.daily_message_limit is None
         else f"{m.daily_message_limit}",
-        "remaining_messages_today": lambda m, a: f"{_calculate_remaining_messages(m)}",
+        "remaining_messages_today": lambda m, _: f"{_calculate_remaining_messages(m)}",
     }
 
     form_excluded_columns = ["chats", "settings", "hashed_password"]
@@ -200,16 +200,16 @@ class ChatAdmin(ModelView, model=Chat):
     column_default_sort = [("created_at", True)]
 
     column_formatters = {
-        "created_at": lambda m, a: m.created_at.strftime("%Y-%m-%d %H:%M:%S")
+        "created_at": lambda m, _: m.created_at.strftime("%Y-%m-%d %H:%M:%S")
         if m.created_at
         else "",
-        "updated_at": lambda m, a: m.updated_at.strftime("%Y-%m-%d %H:%M:%S")
+        "updated_at": lambda m, _: m.updated_at.strftime("%Y-%m-%d %H:%M:%S")
         if m.updated_at
         else "",
-        "deleted_at": lambda m, a: m.deleted_at.strftime("%Y-%m-%d %H:%M:%S")
+        "deleted_at": lambda m, _: m.deleted_at.strftime("%Y-%m-%d %H:%M:%S")
         if m.deleted_at
         else "",
-        "context_token_usage": lambda m, a: f"{m.context_token_usage:,} tokens"
+        "context_token_usage": lambda m, _: f"{m.context_token_usage:,} tokens"
         if m.context_token_usage is not None
         else "",
     }
@@ -228,7 +228,7 @@ class ChatAdmin(ModelView, model=Chat):
     ]
 
     column_formatters_detail = {
-        "user_id": lambda m, a: Markup(
+        "user_id": lambda m, _: Markup(
             f'<a href="/admin/user/details/{m.user_id}">{m.user_id}</a>'
         )
         if m.user_id
@@ -279,17 +279,17 @@ class MessageAdmin(ModelView, model=Message):
     ]
 
     column_formatters = {
-        "content": lambda m, a: m.content[:100] + "..."
+        "content": lambda m, _: m.content[:100] + "..."
         if len(m.content) > 100
         else m.content,
-        "total_cost_usd": lambda m, a: f"${m.total_cost_usd:.4f}"
+        "total_cost_usd": lambda m, _: f"${m.total_cost_usd:.4f}"
         if m.total_cost_usd is not None
         else "$0.0000",
-        "stream_status": lambda m, a: m.stream_status.value if m.stream_status else "",
-        "created_at": lambda m, a: m.created_at.strftime("%Y-%m-%d %H:%M:%S")
+        "stream_status": lambda m, _: m.stream_status.value if m.stream_status else "",
+        "created_at": lambda m, _: m.created_at.strftime("%Y-%m-%d %H:%M:%S")
         if m.created_at
         else "",
-        "updated_at": lambda m, a: m.updated_at.strftime("%Y-%m-%d %H:%M:%S")
+        "updated_at": lambda m, _: m.updated_at.strftime("%Y-%m-%d %H:%M:%S")
         if m.updated_at
         else "",
     }
@@ -353,10 +353,10 @@ class MessageAttachmentAdmin(ModelView, model=MessageAttachment):
     ]
 
     column_formatters = {
-        "created_at": lambda m, a: m.created_at.strftime("%Y-%m-%d %H:%M:%S")
+        "created_at": lambda m, _: m.created_at.strftime("%Y-%m-%d %H:%M:%S")
         if m.created_at
         else "",
-        "updated_at": lambda m, a: m.updated_at.strftime("%Y-%m-%d %H:%M:%S")
+        "updated_at": lambda m, _: m.updated_at.strftime("%Y-%m-%d %H:%M:%S")
         if m.updated_at
         else "",
     }
@@ -394,10 +394,10 @@ class UserSettingsAdmin(ModelView, model=UserSettings):
     ]
 
     column_formatters = {
-        "created_at": lambda m, a: m.created_at.strftime("%Y-%m-%d %H:%M:%S")
+        "created_at": lambda m, _: m.created_at.strftime("%Y-%m-%d %H:%M:%S")
         if m.created_at
         else "",
-        "updated_at": lambda m, a: m.updated_at.strftime("%Y-%m-%d %H:%M:%S")
+        "updated_at": lambda m, _: m.updated_at.strftime("%Y-%m-%d %H:%M:%S")
         if m.updated_at
         else "",
     }

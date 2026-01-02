@@ -1,4 +1,4 @@
-from app.services.sandbox_providers.base import LISTENING_PORTS_COMMAND, SandboxProvider
+from app.services.sandbox_providers.base import SandboxProvider
 from app.services.sandbox_providers.factory import (
     create_docker_config,
     create_sandbox_provider,
@@ -18,7 +18,6 @@ from app.services.sandbox_providers.types import (
 )
 
 __all__ = [
-    "LISTENING_PORTS_COMMAND",
     "SandboxProvider",
     "create_docker_config",
     "create_sandbox_provider",

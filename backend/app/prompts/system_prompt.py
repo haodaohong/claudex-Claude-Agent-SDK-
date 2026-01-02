@@ -37,7 +37,6 @@ def _get_runtime_context_section(
     sandbox_id: str,
     current_date: str,
     sandbox_provider: str,
-    docker_preview_base_url: str,
 ) -> str:
     if sandbox_provider == "docker":
         ports_str = ", ".join(str(p) for p in DOCKER_AVAILABLE_PORTS)
@@ -62,13 +61,12 @@ def _get_runtime_context_section(
 def get_system_prompt(
     sandbox_id: str,
     sandbox_provider: str = "e2b",
-    docker_preview_base_url: str = "http://localhost",
     github_token_configured: bool = False,
     env_vars_formatted: str | None = None,
 ) -> str:
     current_date = datetime.utcnow().strftime("%Y-%m-%d")
     runtime_section = _get_runtime_context_section(
-        sandbox_id, current_date, sandbox_provider, docker_preview_base_url
+        sandbox_id, current_date, sandbox_provider
     )
     github_section = _get_github_section(github_token_configured)
     env_section = _get_env_vars_section(env_vars_formatted)
@@ -86,13 +84,12 @@ def build_custom_system_prompt(
     custom_prompt_content: str,
     sandbox_id: str,
     sandbox_provider: str = "e2b",
-    docker_preview_base_url: str = "http://localhost",
     github_token_configured: bool = False,
     env_vars_formatted: str | None = None,
 ) -> str:
     current_date = datetime.utcnow().strftime("%Y-%m-%d")
     runtime_section = _get_runtime_context_section(
-        sandbox_id, current_date, sandbox_provider, docker_preview_base_url
+        sandbox_id, current_date, sandbox_provider
     )
     github_section = _get_github_section(github_token_configured)
     env_section = _get_env_vars_section(env_vars_formatted)
@@ -125,7 +122,6 @@ def build_system_prompt_for_chat(
     sandbox_provider = (
         user_settings.sandbox_provider if user_settings else None
     ) or config.SANDBOX_PROVIDER
-    docker_preview_base_url = config.DOCKER_PREVIEW_BASE_URL
 
     if selected_prompt_name and user_settings and user_settings.custom_prompts:
         custom_prompt = next(
@@ -141,7 +137,6 @@ def build_system_prompt_for_chat(
                 custom_prompt["content"],
                 sandbox_id,
                 sandbox_provider,
-                docker_preview_base_url,
                 github_token_configured,
                 env_vars_formatted,
             )
@@ -149,7 +144,6 @@ def build_system_prompt_for_chat(
     return get_system_prompt(
         sandbox_id,
         sandbox_provider,
-        docker_preview_base_url,
         github_token_configured,
         env_vars_formatted,
     )

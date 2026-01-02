@@ -69,14 +69,6 @@ class ChatCompletionResult(TypedDict):
     status: str
 
 
-class FileMetadataDict(TypedDict, total=False):
-    path: str
-    type: str
-    size: int
-    modified: float
-    is_binary: bool | None
-
-
 class YamlFrontmatterResult(TypedDict):
     metadata: "YamlMetadata"
     markdown_content: str

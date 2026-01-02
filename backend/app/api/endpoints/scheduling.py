@@ -1,4 +1,3 @@
-import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -21,7 +20,6 @@ from app.services.exceptions import SchedulerException
 from app.services.scheduler import SchedulerService
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
 limiter = Limiter(key_func=get_remote_address)
 
 

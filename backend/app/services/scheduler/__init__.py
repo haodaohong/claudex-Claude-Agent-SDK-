@@ -5,7 +5,6 @@ from app.services.scheduler.execution import (
     load_task_and_user,
     update_task_after_execution,
 )
-from app.services.scheduler.formatting import format_recurrence_description
 from app.services.scheduler.recurrence import (
     calculate_initial_next_execution,
     calculate_next_datetime,
@@ -29,7 +28,6 @@ __all__ = [
     "cleanup_expired_tokens_async",
     "complete_task_execution",
     "execute_scheduled_task_async",
-    "format_recurrence_description",
     "load_task_and_user",
     "update_task_after_execution",
     "validate_recurrence_constraints",

@@ -96,10 +96,6 @@ class PreviewLinksResponse(BaseModel):
     links: list[PortPreviewLink]
 
 
-class ExecuteCommandResponse(BaseModel):
-    output: str
-
-
 class RestoreRequest(BaseModel):
     message_id: UUID
 

@@ -127,15 +127,6 @@ class EmailService:
 
         return await self._send_email(email, subject, body)
 
-    async def send_verification_success_email(
-        self, email: EmailStr, user_name: str | None = None
-    ) -> bool:
-        subject = "Welcome to Claudex - Email verified!"
-        template = self.template_env.get_template("verification_success.html")
-        body = template.render(frontend_url=settings.FRONTEND_URL, user_name=user_name)
-
-        return await self._send_email(email, subject, body)
-
     async def send_password_reset_email(
         self, email: EmailStr, reset_token: str, user_name: str | None = None
     ) -> bool:

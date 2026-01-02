@@ -572,9 +572,6 @@ class SandboxService:
             for c in checkpoints
         ]
 
-    async def restore_to_message(self, sandbox_id: str, message_id: str) -> bool:
-        return await self.restore_checkpoint(sandbox_id, message_id)
-
     async def _enqueue_pty_output(
         self, data: bytes, output_queue: "asyncio.Queue[str]"
     ) -> None:

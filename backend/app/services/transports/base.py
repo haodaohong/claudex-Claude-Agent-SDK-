@@ -32,7 +32,6 @@ class BaseSandboxTransport(Transport, ABC):
         self._sandbox_id = sandbox_id
         self._prompt = prompt
         self._options = options
-        self._is_streaming = True
         self._max_buffer_size = (
             options.max_buffer_size
             if options.max_buffer_size is not None
@@ -327,9 +326,6 @@ class BaseSandboxTransport(Transport, ABC):
                         continue
                     json_line = json_line[min(first_brace_positions) :]
                     json_started = True
-
-                if not json_started:
-                    continue
 
                 json_buffer += json_line
                 if len(json_buffer) > self._max_buffer_size:
