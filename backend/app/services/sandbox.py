@@ -139,7 +139,7 @@ class SandboxService:
     ) -> dict[str, str]:
         escaped_url = shlex.quote(url)
         browser_cmd = (
-            f"DISPLAY=:99 chromium-browser --no-sandbox --disable-gpu "
+            f"DISPLAY=:99 chromium --no-sandbox --disable-gpu "
             f"--disable-dev-shm-usage --window-size={width},{height} "
             f"--start-maximized {escaped_url}"
         )

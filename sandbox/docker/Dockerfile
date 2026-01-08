@@ -30,14 +30,15 @@ RUN apt-get update && apt-get install -y \
     xvfb \
     x11vnc \
     websockify \
-    chromium-browser \
     fonts-liberation \
     libnss3 \
     libxss1 \
     libasound2 \
     xdotool \
+    && add-apt-repository -y ppa:xtradeb/apps \
     && add-apt-repository -y ppa:deadsnakes/ppa \
     && apt-get update \
+    && apt-get install -y chromium --no-install-recommends \
     && apt-get install -y python3.11 python3.11-venv python3.11-dev \
     && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 \
     && update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1 \
