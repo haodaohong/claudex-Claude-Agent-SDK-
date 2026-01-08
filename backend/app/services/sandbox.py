@@ -25,6 +25,7 @@ from app.services.sandbox_providers import (
     PtySize,
     SandboxProvider,
 )
+from app.services.sandbox_providers.types import CommandResult
 from app.services.skill import SkillService
 from app.utils.queue import drain_queue, put_with_overflow
 
@@ -104,18 +105,13 @@ class SandboxService:
         sandbox_id: str,
         command: str,
         background: bool = False,
-    ) -> str:
+    ) -> CommandResult:
         secrets = await self.provider.get_secrets(sandbox_id)
         envs = {s.key: s.value for s in secrets}
 
-        result = await self.provider.execute_command(
+        return await self.provider.execute_command(
             sandbox_id, command, background=background, envs=envs
         )
-
-        if background:
-            return result.stdout
-
-        return result.stdout + result.stderr
 
     async def write_file(self, sandbox_id: str, file_path: str, content: str) -> None:
         await self.provider.write_file(sandbox_id, file_path, content)
@@ -131,21 +127,30 @@ class SandboxService:
         return await self.provider.get_vnc_url(sandbox_id)
 
     async def start_browser(
-        self,
-        sandbox_id: str,
-        url: str = "about:blank",
-        width: int = 1920,
-        height: int = 1080,
+        self, sandbox_id: str, url: str = "about:blank"
     ) -> dict[str, str]:
         escaped_url = shlex.quote(url)
         browser_cmd = (
             f"DISPLAY=:99 chromium --no-sandbox --disable-gpu "
-            f"--disable-dev-shm-usage --window-size={width},{height} "
-            f"--start-maximized {escaped_url}"
+            f"--disable-dev-shm-usage --window-size=1920,1080 --window-position=0,0 {escaped_url}"
         )
-        await self.execute_command(sandbox_id, browser_cmd, background=True)
-        logger.info("Browser started for sandbox %s with URL: %s", sandbox_id, url)
-        return {"status": "starting", "url": url}
+
+        try:
+            await self.execute_command(sandbox_id, browser_cmd, background=True)
+            logger.info("Browser started for sandbox %s with URL: %s", sandbox_id, url)
+            return {"status": "starting", "url": url}
+        except Exception as exc:
+            logger.error("Failed to start browser for sandbox %s: %s", sandbox_id, exc)
+            await self._cleanup_browser_resources(sandbox_id)
+            raise
+
+    async def _cleanup_browser_resources(self, sandbox_id: str) -> None:
+        try:
+            await self.execute_command(
+                sandbox_id, "pkill -9 -f chromium", background=True
+            )
+        except Exception:
+            pass
 
     async def stop_browser(self, sandbox_id: str) -> dict[str, str]:
         await self.execute_command(sandbox_id, "pkill -f chromium", background=True)
@@ -154,9 +159,9 @@ class SandboxService:
 
     async def get_browser_status(self, sandbox_id: str) -> dict[str, bool]:
         result = await self.execute_command(
-            sandbox_id, "pgrep -f 'chromium --no-sandbox' > /dev/null && echo 'running' || echo 'stopped'"
+            sandbox_id, "pidof chromium >/dev/null 2>&1 && echo 'yes' || echo 'no'"
         )
-        running = "running" in result
+        running = result.stdout.strip() == "yes"
         return {"running": running}
 
     async def create_pty_session(
@@ -498,17 +503,15 @@ class SandboxService:
         start_result = await self.execute_command(
             sandbox_id, start_cmd, background=True
         )
-        logger.info("Anthropic Bridge started: %s", start_result)
+        logger.info("Anthropic Bridge started: %s", start_result.stdout)
 
-    async def _setup_openvscode_settings(self, sandbox_id: str) -> None:
+    async def _start_openvscode_server(self, sandbox_id: str) -> None:
         settings_content = json.dumps(OPENVSCODE_DEFAULT_SETTINGS, indent=2)
         escaped_settings = settings_content.replace("'", "'\"'\"'")
 
-        # Setup settings and start server if not already running (for non-Docker providers)
         setup_and_start_cmd = (
             f"mkdir -p {OPENVSCODE_SETTINGS_DIR} && "
             f"echo '{escaped_settings}' > {OPENVSCODE_SETTINGS_PATH} && "
-            f"pgrep -f 'openvscode-server.*{OPENVSCODE_PORT}' > /dev/null || "
             f"openvscode-server --host 0.0.0.0 --port {OPENVSCODE_PORT} "
             "--without-connection-token --disable-telemetry &"
         )
@@ -568,7 +571,7 @@ class SandboxService:
         is_fork: bool = False,
     ) -> None:
         tasks: list[Coroutine[None, None, None]] = [
-            self._setup_openvscode_settings(sandbox_id),
+            self._start_openvscode_server(sandbox_id),
         ]
 
         # Forks skip filesystem-based setup (env vars in .bashrc, config files, skills/commands/agents)
@@ -673,7 +676,7 @@ class SandboxService:
             )
             result = await self.execute_command(sandbox_id, cmd)
 
-            if "OK" in result:
+            if "OK" in result.stdout:
                 logger.info("Cleaned thinking blocks from session %s", session_id)
                 return True
 

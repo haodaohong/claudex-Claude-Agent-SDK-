@@ -160,15 +160,13 @@ async function getIDEUrl(sandboxId: string): Promise<string | null> {
   }
 }
 
-interface BrowserUrlResponse {
-  vnc_url: string | null;
-  ws_url: string | null;
-  status: 'running' | 'stopped' | 'starting';
-}
-
 interface BrowserStatus {
   running: boolean;
   current_url?: string;
+}
+
+interface VNCUrlResponse {
+  url: string | null;
 }
 
 async function getVNCUrl(sandboxId: string): Promise<string | null> {
@@ -176,8 +174,8 @@ async function getVNCUrl(sandboxId: string): Promise<string | null> {
 
   try {
     return await serviceCall(async () => {
-      const response = await apiClient.get<BrowserUrlResponse>(`/sandbox/${sandboxId}/vnc-url`);
-      return response?.ws_url ?? null;
+      const response = await apiClient.get<VNCUrlResponse>(`/sandbox/${sandboxId}/vnc-url`);
+      return response?.url ?? null;
     });
   } catch (error) {
     logger.error('VNC URL fetch failed', 'sandboxService', error);
@@ -188,16 +186,12 @@ async function getVNCUrl(sandboxId: string): Promise<string | null> {
 async function startBrowser(
   sandboxId: string,
   url: string = 'about:blank',
-  width: number = 1920,
-  height: number = 1080,
 ): Promise<BrowserStatus> {
   validateRequired(sandboxId, 'Sandbox ID');
 
   return serviceCall(async () => {
     const response = await apiClient.post<BrowserStatus>(`/sandbox/${sandboxId}/browser/start`, {
       url,
-      width,
-      height,
     });
     return response ?? { running: true, current_url: url };
   });

@@ -119,6 +119,7 @@ class LocalDockerProvider(SandboxProvider):
                 "TERM": "xterm-256color",
                 "HOME": self.config.user_home,
                 "USER": "user",
+                "OPENVSCODE_PORT": str(self.config.openvscode_port),
             },
         )
         return container
@@ -659,6 +660,7 @@ class LocalDockerProvider(SandboxProvider):
                 "TERM": "xterm-256color",
                 "HOME": self.config.user_home,
                 "USER": "user",
+                "OPENVSCODE_PORT": str(self.config.openvscode_port),
             },
         )
         return container

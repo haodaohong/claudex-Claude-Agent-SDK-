@@ -12,7 +12,6 @@ from app.core.deps import (
 from app.models.schemas import (
     AddSecretRequest,
     BrowserStatusResponse,
-    BrowserUrlResponse,
     FileContentResponse,
     FileMetadata,
     IDEUrlResponse,
@@ -27,6 +26,7 @@ from app.models.schemas import (
     UpdateFileResponse,
     UpdateIDEThemeRequest,
     UpdateSecretRequest,
+    VNCUrlResponse,
 )
 from app.services.exceptions import SandboxException
 from app.services.sandbox import SandboxService
@@ -82,15 +82,13 @@ async def get_ide_url(
     return IDEUrlResponse(url=url)
 
 
-@router.get("/{sandbox_id}/vnc-url", response_model=BrowserUrlResponse)
+@router.get("/{sandbox_id}/vnc-url", response_model=VNCUrlResponse)
 async def get_vnc_url(
     context: SandboxContext = Depends(get_sandbox_context),
     sandbox_service: SandboxService = Depends(get_sandbox_service_for_context),
-) -> BrowserUrlResponse:
+) -> VNCUrlResponse:
     url = await sandbox_service.get_vnc_url(context.sandbox_id)
-    status_result = await sandbox_service.get_browser_status(context.sandbox_id)
-    status = "running" if status_result.get("running") else "stopped"
-    return BrowserUrlResponse(vnc_url=url, ws_url=url, status=status)
+    return VNCUrlResponse(url=url)
 
 
 @router.post("/{sandbox_id}/browser/start", response_model=BrowserStatusResponse)
@@ -100,9 +98,7 @@ async def start_browser(
     context: SandboxContext = Depends(get_sandbox_context),
     sandbox_service: SandboxService = Depends(get_sandbox_service_for_context),
 ) -> BrowserStatusResponse:
-    await sandbox_service.start_browser(
-        context.sandbox_id, request.url, request.width, request.height
-    )
+    await sandbox_service.start_browser(context.sandbox_id, request.url)
     return BrowserStatusResponse(running=True, current_url=request.url)
 
 

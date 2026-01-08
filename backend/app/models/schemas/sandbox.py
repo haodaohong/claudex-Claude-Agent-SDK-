@@ -56,16 +56,12 @@ class IDEUrlResponse(BaseModel):
     url: str | None
 
 
-class BrowserUrlResponse(BaseModel):
-    vnc_url: str | None
-    ws_url: str | None
-    status: Literal["running", "stopped", "starting"]
+class VNCUrlResponse(BaseModel):
+    url: str | None
 
 
 class StartBrowserRequest(BaseModel):
     url: str = Field(default="about:blank")
-    width: int = Field(default=1920, ge=800, le=3840)
-    height: int = Field(default=1080, ge=600, le=2160)
 
 
 class BrowserStatusResponse(BaseModel):

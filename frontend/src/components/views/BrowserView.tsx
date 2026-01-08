@@ -9,6 +9,8 @@ import {
   useStopBrowserMutation,
 } from '@/hooks/queries';
 
+const DEFAULT_BROWSER_URL = 'https://www.google.com';
+
 interface BrowserViewProps {
   sandboxId?: string;
   isActive?: boolean;
@@ -20,6 +22,8 @@ export const BrowserView = memo(function BrowserView({
 }: BrowserViewProps) {
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [vncInstanceKey, setVncInstanceKey] = useState(0);
+  const [browserUrl, setBrowserUrl] = useState(DEFAULT_BROWSER_URL);
 
   const {
     data: vncUrl,
@@ -38,7 +42,10 @@ export const BrowserView = memo(function BrowserView({
     if (sandboxId) {
       setIsConnecting(true);
       startBrowserMutation.mutate(
-        { sandboxId, url: 'https://www.google.com' },
+        {
+          sandboxId,
+          url: browserUrl,
+        },
         {
           onSuccess: () => {
             setTimeout(() => refetchVncUrl(), 2000);
@@ -49,7 +56,7 @@ export const BrowserView = memo(function BrowserView({
         },
       );
     }
-  }, [sandboxId, startBrowserMutation, refetchVncUrl]);
+  }, [sandboxId, startBrowserMutation, refetchVncUrl, browserUrl]);
 
   const handleStopBrowser = useCallback(() => {
     if (sandboxId) {
@@ -63,7 +70,7 @@ export const BrowserView = memo(function BrowserView({
   }, []);
 
   const handleDisconnect = useCallback(() => {
-    setIsConnecting(true);
+    setIsConnecting(false);
   }, []);
 
   const handleError = useCallback((error: string) => {
@@ -74,8 +81,11 @@ export const BrowserView = memo(function BrowserView({
   const handleReconnect = useCallback(() => {
     setIsConnecting(true);
     setConnectionError(null);
+    setVncInstanceKey((prev) => prev + 1);
     refetchVncUrl();
   }, [refetchVncUrl]);
+
+  const isBrowserRunning = browserStatus?.running;
 
   if (!sandboxId) {
     return (
@@ -89,10 +99,8 @@ export const BrowserView = memo(function BrowserView({
     return null;
   }
 
-  const isBrowserRunning = browserStatus?.running;
-
   return (
-    <div className="flex h-full w-full flex-col bg-surface-secondary dark:bg-surface-dark-secondary">
+    <div className="flex h-full min-h-0 w-full min-w-0 flex-col bg-surface-secondary dark:bg-surface-dark-secondary">
       <div className="flex items-center border-b border-border px-3 py-1.5 dark:border-white/10">
         <div className="flex flex-1 items-center gap-3">
           <Button
@@ -112,18 +120,7 @@ export const BrowserView = memo(function BrowserView({
 
           <div className="flex-1" />
 
-          {!isBrowserRunning ? (
-            <Button
-              onClick={handleStartBrowser}
-              variant="unstyled"
-              disabled={startBrowserMutation.isPending}
-              className="flex items-center gap-1 rounded-md bg-brand-500 px-2 py-1 text-xs text-white transition-all hover:bg-brand-600 disabled:opacity-50"
-              title="Start browser"
-            >
-              <Play className="h-3 w-3" />
-              Start Browser
-            </Button>
-          ) : (
+          {isBrowserRunning && (
             <Button
               onClick={handleStopBrowser}
               variant="unstyled"
@@ -135,11 +132,10 @@ export const BrowserView = memo(function BrowserView({
               Stop
             </Button>
           )}
-
         </div>
       </div>
 
-      <div className="relative flex-1 overflow-hidden">
+      <div className="relative min-h-0 min-w-0 flex-1 overflow-hidden">
         {isConnecting && isBrowserRunning && !connectionError && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-white/50 dark:bg-black/50">
             <Spinner size="md" className="h-6 w-6 text-brand-500" />
@@ -165,9 +161,26 @@ export const BrowserView = memo(function BrowserView({
         {!isBrowserRunning && !isConnecting && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-surface-secondary dark:bg-surface-dark-secondary">
             <Globe className="h-12 w-12 text-text-tertiary dark:text-text-dark-tertiary" />
-            <span className="text-sm text-text-tertiary dark:text-text-dark-tertiary">
-              Browser not running
-            </span>
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-sm font-medium text-text-secondary dark:text-text-dark-secondary">
+                Start a browser session
+              </span>
+              <span className="text-xs text-text-tertiary dark:text-text-dark-tertiary">
+                Enter a URL to browse
+              </span>
+            </div>
+            <input
+              type="text"
+              value={browserUrl}
+              onChange={(e) => setBrowserUrl(e.target.value)}
+              placeholder="https://example.com"
+              className="bg-surface-primary dark:bg-surface-dark-primary w-80 rounded-md border border-border px-3 py-2 text-sm text-text-primary outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 dark:border-white/10 dark:text-text-dark-primary dark:focus:border-brand-400 dark:focus:ring-brand-400"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !startBrowserMutation.isPending) {
+                  handleStartBrowser();
+                }
+              }}
+            />
             <Button
               onClick={handleStartBrowser}
               variant="unstyled"
@@ -183,6 +196,7 @@ export const BrowserView = memo(function BrowserView({
         <VNCClient
           wsUrl={vncUrl ?? null}
           isActive={isActive && !!vncUrl && !!isBrowserRunning}
+          instanceKey={vncInstanceKey}
           onConnect={handleConnect}
           onDisconnect={handleDisconnect}
           onError={handleError}

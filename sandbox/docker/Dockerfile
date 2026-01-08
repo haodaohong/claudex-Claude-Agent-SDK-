@@ -30,6 +30,7 @@ RUN apt-get update && apt-get install -y \
     xvfb \
     x11vnc \
     websockify \
+    x11-xserver-utils \
     fonts-liberation \
     libnss3 \
     libxss1 \

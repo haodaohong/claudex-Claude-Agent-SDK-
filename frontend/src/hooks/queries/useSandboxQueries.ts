@@ -171,8 +171,6 @@ export const useBrowserStatusQuery = (
 interface StartBrowserParams {
   sandboxId: string;
   url?: string;
-  width?: number;
-  height?: number;
 }
 
 export const useStartBrowserMutation = (
@@ -182,8 +180,7 @@ export const useStartBrowserMutation = (
   const { onSuccess, ...restOptions } = options ?? {};
 
   return useMutation({
-    mutationFn: ({ sandboxId, url, width, height }) =>
-      sandboxService.startBrowser(sandboxId, url, width, height),
+    mutationFn: ({ sandboxId, url }) => sandboxService.startBrowser(sandboxId, url),
     onSuccess: async (data, variables, context, mutation) => {
       await queryClient.invalidateQueries({
         queryKey: queryKeys.sandbox.browserStatus(variables.sandboxId),

@@ -40,7 +40,6 @@ from .permissions import PermissionRequest, PermissionRequestResponse, Permissio
 from .sandbox import (
     AddSecretRequest,
     BrowserStatusResponse,
-    BrowserUrlResponse,
     FileContentResponse,
     FileMetadata,
     IDEUrlResponse,
@@ -50,6 +49,7 @@ from .sandbox import (
     UpdateFileResponse,
     UpdateIDEThemeRequest,
     UpdateSecretRequest,
+    VNCUrlResponse,
 )
 from .scheduling import (
     PaginatedTaskExecutions,
@@ -127,7 +127,6 @@ __all__ = [
     # sandbox
     "AddSecretRequest",
     "BrowserStatusResponse",
-    "BrowserUrlResponse",
     "FileContentResponse",
     "FileMetadata",
     "IDEUrlResponse",
@@ -137,6 +136,7 @@ __all__ = [
     "UpdateFileResponse",
     "UpdateIDEThemeRequest",
     "UpdateSecretRequest",
+    "VNCUrlResponse",
     # scheduling
     "PaginatedTaskExecutions",
     "ScheduledTaskBase",
