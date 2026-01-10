@@ -129,7 +129,8 @@ class SandboxService:
         escaped_url = shlex.quote(url)
         browser_cmd = (
             f"DISPLAY=:99 chromium --no-sandbox --disable-gpu "
-            f"--disable-dev-shm-usage --window-size=1920,1080 --window-position=0,0 {escaped_url}"
+            f"--disable-dev-shm-usage --window-size=1920,1080 --window-position=0,0 "
+            f"--remote-debugging-port=9222 {escaped_url}"
         )
 
         try:
